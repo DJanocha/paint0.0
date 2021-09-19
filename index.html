@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online Paint</title>
+    <style>
+      :root {
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="palette">
+      <button id="random">random color</button>
+      <button id="rainbow" style="background-color: rgba(38, 38, 194, 0.562)">rainbow mode</button>
+      <!-- <input type="checkbox" /> -->
+      <input id="color" type="color" value="#000000" />
+      <input type="color" disabled value="#FF0000" />
+      <label>thickness: 0</label>
+      <input type="range" minlength="1" maxlength="100" />
+      <label for=""> opacity: 0 </label>
+      <input type="range" minlength="0" maxlength="100" />
+    </div>
+    <canvas id="my-canvas" width="500" height="500"></canvas>
+    <script>
+      //handlers
+      const canvas = document.querySelector("#my-canvas")
+      const context = canvas.getContext("2d")
+      const randomButtonHandler = document.querySelector("#random")
+      const colorPickerHandler = document.querySelector("#color")
+      const rainbowButtonHandler = document.querySelector('#rainbow')
+      //variables
+      let hue = 0
+      let isDrawing = false
+      let lastX = 0
+      let lastY = 0
+
+      //canvas/context
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+      context.strokeStyle = `hsl(${hue}, 100%, 50%)`
+      context.lineJoin = "round"
+      context.lineCap = "round"
+
+      //functions
+      const draw = (e) => {
+        if (!isDrawing) return
+        context.beginPath()
+        context.moveTo(lastX, lastY)
+        context.lineTo(e.offsetX, e.offsetY)
+        context.stroke()
+        lastX = e.offsetX
+        lastY = e.offsetY
+      }
+      const setRandomColor = (e) => {
+        context.strokeStyle = `hsl(${Math.floor(Math.random() * 360)}, 100%, 50%)`
+        // console.log(e)
+      }
+      const setColor = (e) => {
+        context.strokeStyle = e.target.value
+      }
+      const toggleeRainbow
+      //event listeners
+      rainbowButtonHandler.addEventListener('click', toggleRainbow)
+      colorPickerHandler.addEventListener("change", setColor)
+      random.addEventListener("click", setRandomColor)
+      canvas.addEventListener("mousedown", (e) => {
+        isDrawing = true
+        lastX = e.offsetX
+        lastY = e.offsetY
+      })
+      canvas.addEventListener("mouseup", () => {
+        isDrawing = false
+      })
+      canvas.addEventListener("mouseout", () => {
+        isDrawing = false
+      })
+      canvas.addEventListener("mousemove", draw)
+    </script>
+  </body>
+</html>
