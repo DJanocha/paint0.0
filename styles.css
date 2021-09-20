@@ -1,0 +1,19 @@
+:root {
+  background-color: pink;
+  box-sizing: border-box;
+}
+.paint {
+  display: flex;
+  flex-direction: column;
+  /* max-height: 80vh; */
+}
+.palette {
+  display: flex;
+  flex-direction: row;
+}
+canvas {
+  background-color: white;
+}
+button.checked {
+  background-color: rgba(0, 153, 255, 0.781);
+}

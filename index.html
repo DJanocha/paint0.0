@@ -5,37 +5,45 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Online Paint</title>
-    <style>
-      :root {
-        box-sizing: border-box;
-      }
-    </style>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="palette">
-      <button id="random">random color</button>
-      <button id="rainbow" style="background-color: rgba(38, 38, 194, 0.562)">rainbow mode</button>
-      <!-- <input type="checkbox" /> -->
-      <input id="color" type="color" value="#000000" />
-      <input type="color" disabled value="#FF0000" />
-      <label>thickness: 0</label>
-      <input type="range" minlength="1" maxlength="100" />
-      <label for=""> opacity: 0 </label>
-      <input type="range" minlength="0" maxlength="100" />
+    <div class="paint">
+      <div class="palette">
+        <button id="random">random color</button>
+        <button id="rainbow">rainbow mode</button>
+        <!-- <input type="checkbox" /> -->
+        <input id="color" type="color" value="#000000" />
+        <!-- <input type="color" disabled value="#FF0000" /> -->
+        <label class="thickness-label">thickness: 1</label>
+        <input class="thickness-input" type="range" value="1" min="1" max="100" />
+        <!-- <label class="opacity-label"> opacity: 100% </label>
+        <input class="opacity-input" type="range" value="255" min="1" max="255" /> -->
+      </div>
+      <canvas id="my-canvas" width="500" height="500"></canvas>
     </div>
-    <canvas id="my-canvas" width="500" height="500"></canvas>
     <script>
       //handlers
       const canvas = document.querySelector("#my-canvas")
       const context = canvas.getContext("2d")
       const randomButtonHandler = document.querySelector("#random")
       const colorPickerHandler = document.querySelector("#color")
-      const rainbowButtonHandler = document.querySelector('#rainbow')
+      const rainbowButtonHandler = document.querySelector("#rainbow")
+      const thicknessLabelHandler = document.querySelector(".thickness-label")
+      const thicknessInputHandler = document.querySelector(".thickness-input")
+      // const opacityLabelHandler = document.querySelector(".opacity-label")
+      // const opacityInputHandler = document.querySelector(".opacity-input")
       //variables
       let hue = 0
+      let red = 0
+      let green = 0
+      let blue = 0
       let isDrawing = false
+      let isRainbowModeOn = false
       let lastX = 0
       let lastY = 0
+      // let opacity = 256
+      let thickness = 1
 
       //canvas/context
       canvas.width = window.innerWidth
@@ -43,6 +51,7 @@
       context.strokeStyle = `hsl(${hue}, 100%, 50%)`
       context.lineJoin = "round"
       context.lineCap = "round"
+      context.lineWidth = 1
 
       //functions
       const draw = (e) => {
@@ -50,20 +59,73 @@
         context.beginPath()
         context.moveTo(lastX, lastY)
         context.lineTo(e.offsetX, e.offsetY)
+        if (isRainbowModeOn) {
+          hue++
+          context.strokeStyle = `hsl(${hue}, 100%, 50%)`
+        }
         context.stroke()
         lastX = e.offsetX
         lastY = e.offsetY
       }
       const setRandomColor = (e) => {
         context.strokeStyle = `hsl(${Math.floor(Math.random() * 360)}, 100%, 50%)`
-        // console.log(e)
       }
       const setColor = (e) => {
         context.strokeStyle = e.target.value
       }
-      const toggleeRainbow
+      const toggleRainbow = (e) => {
+        // opacityInputHandler.disabled = !opacityInputHandler.disabled
+        rainbowButtonHandler.classList.toggle("checked")
+        isRainbowModeOn = !isRainbowModeOn
+        if (!isRainbowModeOn) context.strokeStyle = `#000000`
+      }
+
+      const changeThickness = (newThickness) => {
+        if (newThickness > 100) {
+          console.log("wieksza niz 100")
+          context.lineWidth = 100
+        } else if (newThickness < 1) {
+          console.log("mniejsza niz 1")
+          context.lineWidth = 0
+        } else {
+          context.lineWidth = newThickness
+        }
+        thicknessInputHandler.value = context.lineWidth
+        thicknessLabelHandler.innerHTML = `thickness: ${context.lineWidth}`
+      }
+      // const changeOpacity = (newOpacity) => {
+      //   console.log("newopacity:", newOpacity)
+      //   console.log("opacity:", opacity)
+      //   console.log("contextcolor:", context.strokeStyle)
+      //   const hexOpacityValue = Number(newOpacity).toString(16)
+      //   if (+newOpacity > +opacityInputHandler.max) {
+      //     console.log("wyzej niech nei skacze")
+      //   } else if (+newOpacity < +opacityInputHandler.min) {
+      //     console.log("nizej nie moze isc przeciez")
+      //   } else {
+      //     opacityInputHandler.value = newOpacity
+      //     opacityLabelHandler.innerHTML = `opacity: ${Math.round((newOpacity * 100) / 256)}%`
+      //     opacity = newOpacity
+      //     console.log("przed grzebaniem", context.strokeStyle)
+      //     context.strokeStyle = context.strokeStyle.slice(0, 7) + hexOpacityValue
+      //     console.log("po  grzebaniu:", context.strokeStyle)
+      //   }
+
+      const handleMouseScroll = (e) => {
+        if (!e.shiftKey && !e.altKey) return
+        e.preventDefault()
+        if (e.shiftKey && !e.altKey) {
+          if (e.deltaY > 0) changeThickness(context.lineWidth - 1)
+          else changeThickness(context.lineWidth + 1)
+        }
+        // else if (e.altKey && !e.shiftKey) {
+        //   if (e.deltaY > 0) changeOpacity(opacity - 1)
+        //   else if (e.deltaY < 0) changeOpacity(opacity + 1)
+        // }
+      }
+
       //event listeners
-      rainbowButtonHandler.addEventListener('click', toggleRainbow)
+      rainbowButtonHandler.addEventListener("click", toggleRainbow)
       colorPickerHandler.addEventListener("change", setColor)
       random.addEventListener("click", setRandomColor)
       canvas.addEventListener("mousedown", (e) => {
@@ -78,6 +140,19 @@
         isDrawing = false
       })
       canvas.addEventListener("mousemove", draw)
+      canvas.addEventListener("wheel", handleMouseScroll)
+      thicknessInputHandler.addEventListener("change", (e) => {
+        changeThickness(e.target.value)
+      })
+      thicknessInputHandler.addEventListener("mousemove", (e) => {
+        changeThickness(e.target.value)
+      })
+      // opacityInputHandler.addEventListener("change", (e) => {
+      //   changeOpacity(+e.target.value)
+      // })
+      // opacityInputHandler.addEventListener("mousemove", (e) => {
+      //   changeOpacity(+e.target.value)
+      // })
     </script>
   </body>
 </html>
